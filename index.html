@@ -48,6 +48,7 @@ let state;try{state=JSON.parse(localStorage.getItem('moya-zhizn-data'))||default
   if(!state || typeof state!=='object' || Array.isArray(state)) state=defaults;
   for(const key of ['tasks','entries','objects','transactions','journal','schedule']){
     if(!Array.isArray(state[key])) state[key]=defaults[key];
+    else state[key]=state[key].filter(item=>item && typeof item==='object' && !Array.isArray(item));
   }
   if(typeof state.currency!=='string') state.currency=defaults.currency;
 })();
@@ -161,7 +162,13 @@ const importInput=$('#import-file');if(importInput)importInput.addEventListener(
 const date=$('#selected-date');if(date)date.addEventListener('change',()=>{selectedDate=date.value||today();render()});
 const form=$('#entity-form');if(form)form.addEventListener('submit',e=>{e.preventDefault();submitForm(form)});
 }
-render();
+try {
+  render();
+} catch (error) {
+  console.error('App render failed:', error);
+  const root=document.querySelector('#root');
+  if(root) root.innerHTML='<main style="margin:24px;padding:24px;background:white;border:1px solid #f0b4b4;border-radius:16px;font:16px system-ui;color:#7f1d1d"><h2>Не удалось отобразить приложение</h2><p>Локальные данные не удалены. Обнови страницу. Если ошибка повторится, сохрани резервную копию данных, прежде чем продолжать.</p><button onclick="location.reload()" style="padding:10px 16px">Перезагрузить приложение</button></main>';
+}
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(()=>{});
 })();
 </script>
