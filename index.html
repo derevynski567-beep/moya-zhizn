@@ -42,6 +42,15 @@ const uid=()=>Math.random().toString(36).slice(2,10);
 const fmtDate=s=>{if(!s)return '';let d=new Date(s+'T12:00:00');return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})};
 const defaultState=()=>({tasks:[{id:uid(),date:today(),time:'09:00',title:'Проверить задачи на день',note:'',done:false},{id:uid(),date:today(),time:'11:00',title:'Связаться с заказчиком',note:'Уточнить статус работ',done:false}],entries:[],objects:[],transactions:[],journal:[],schedule:[],currency:'RUB'});
 let state;try{state=JSON.parse(localStorage.getItem('moya-zhizn-data'))||defaultState()}catch(e){state=defaultState()}
+/* Recover safely from older or partial saved schemas without deleting user data. */
+(function normalizeSavedState(){
+  const defaults=defaultState();
+  if(!state || typeof state!=='object' || Array.isArray(state)) state=defaults;
+  for(const key of ['tasks','entries','objects','transactions','journal','schedule']){
+    if(!Array.isArray(state[key])) state[key]=defaults[key];
+  }
+  if(typeof state.currency!=='string') state.currency=defaults.currency;
+})();
 let tab='today',selectedDate=today(),modal=null,toastTimer;
 function save(){
   const key='moya-zhizn-data';
