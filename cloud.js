@@ -51,16 +51,26 @@
   }
   document.querySelector('#cloud-form').addEventListener('submit', async e => {
     e.preventDefault(); status('Выполняю вход…');
-    const {data,error} = await supa.auth.signInWithPassword({email:document.querySelector('#cloud-email').value.trim(),password:document.querySelector('#cloud-password').value});
-    if (error) { status(error.message); return; }
-    await login(data.user);
+    try {
+      const {data,error} = await supa.auth.signInWithPassword({email:document.querySelector('#cloud-email').value.trim(),password:document.querySelector('#cloud-password').value});
+      if (error) { status('Ошибка входа: ' + error.message); return; }
+      await login(data.user);
+    } catch (e) {
+      status('Ошибка соединения с Supabase Auth: ' + (e && e.message ? e.message : String(e)) + '. URL: ' + config.url);
+      console.error('Supabase signInWithPassword failed', e);
+    }
   });
   document.querySelector('#cloud-signup').addEventListener('click', async () => {
     status('Создаю аккаунт…');
-    const {data,error} = await supa.auth.signUp({email:document.querySelector('#cloud-email').value.trim(),password:document.querySelector('#cloud-password').value,options:{emailRedirectTo:location.origin+location.pathname}});
-    if (error) { status(error.message); return; }
-    if (!data.session) { status('Проверь почту и подтверди адрес, затем войди.'); return; }
-    await login(data.user);
+    try {
+      const {data,error} = await supa.auth.signUp({email:document.querySelector('#cloud-email').value.trim(),password:document.querySelector('#cloud-password').value,options:{emailRedirectTo:location.origin+location.pathname}});
+      if (error) { status('Ошибка регистрации: ' + error.message); return; }
+      if (!data.session) { status('Проверь почту и подтверди адрес, затем войди.'); return; }
+      await login(data.user);
+    } catch (e) {
+      status('Ошибка соединения с Supabase Auth: ' + (e && e.message ? e.message : String(e)) + '. URL: ' + config.url);
+      console.error('Supabase signUp failed', e);
+    }
   });
   document.querySelector('#cloud-sync').addEventListener('click', push);
   document.querySelector('#cloud-out').addEventListener('click', async () => { await supa.auth.signOut(); user=null; ready=false; controls(); status('Вышел из аккаунта. Локальные данные сохранены.'); });
