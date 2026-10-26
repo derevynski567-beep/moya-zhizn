@@ -1,14 +1,19 @@
 {
-  "name": "Моя жизнь — планировщик и финансы",
-  "short_name": "Моя жизнь",
-  "description": "Планируй дни, веди дневник и считай прибыль по рабочим объектам.",
+  "name": "PlanDay — планируй, действуй, достигай",
+  "short_name": "PlanDay",
+  "description": "PlanDay — планировщик дня, привычек, задач и личных финансов.",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f6f8",
-  "theme_color": "#f5f6f8",
+  "background_color": "#080a18",
+  "theme_color": "#080a18",
   "icons": [
-    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
