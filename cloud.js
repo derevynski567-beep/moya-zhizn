@@ -35,7 +35,18 @@
       const {data,error} = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
       if (error) throw error;
       if (data && data.data) {
-        if (!confirm('В облаке уже есть данные. Перед заменой я сохраню текущую локальную копию в резервный снимок этого браузера. Нажми OK, чтобы загрузить данные из облака на это устройство. Нажми Отмена, чтобы оставить локальные данные без изменений.')) {
+        const localRaw = localStorage.getItem(KEY) || '{}';
+        let cloudRaw = '';
+        try { cloudRaw = JSON.stringify(data.data); } catch (_) {}
+        let localComparable = '';
+        try { localComparable = JSON.stringify(JSON.parse(localRaw)); } catch (_) {}
+        if (cloudRaw && localComparable === cloudRaw) {
+          ready = true;
+          lastSaved = localRaw;
+          status('Синхронизировано · облачные и локальные данные совпадают.');
+          return;
+        }
+        if (!confirm('В облаке уже есть данные, и они отличаются от данных этого устройства. Перед заменой я сохраню текущую локальную копию в резервный снимок этого браузера. Нажми OK, чтобы загрузить данные из облака. Нажми Отмена, чтобы оставить локальные данные без изменений.')) {
           status('Синхронизация не включена. Локальные данные сохранены.'); return;
         }
         try {
