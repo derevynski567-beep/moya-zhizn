@@ -22,6 +22,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Create Supabase browser config
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          test -n "$SUPABASE_URL" || (echo "Missing SUPABASE_URL secret" && exit 1)
+          test -n "$SUPABASE_ANON_KEY" || (echo "Missing SUPABASE_ANON_KEY secret" && exit 1)
+          printf 'window.MOYA_SUPABASE_CONFIG = {url: %s, key: %s};\n' "$(node -p 'JSON.stringify(process.env.SUPABASE_URL)')" "$(node -p 'JSON.stringify(process.env.SUPABASE_ANON_KEY)')" > supabase-config.js
       - name: Upload static files
         uses: actions/upload-pages-artifact@v3
         with:
