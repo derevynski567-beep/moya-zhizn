@@ -49,7 +49,7 @@ function totalExpenses(){return state.transactions.filter(t=>t.type==='expense')
 function totalIncomes(){return state.transactions.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0)}
 function netProfit(){return totalIncomes()-totalExpenses()}
 function objName(id){return state.objects.find(o=>o.id===id)?.name||'Без объекта'}
-function btn(label,action,cls='light'){return '<button class="btn '+cls+'" data-action="'+action+'">'+label+'</button>'}
+function btn(label,action,cls='light'){return '<button type="button" class="btn '+cls+'" data-action="'+action+'">'+label+'</button>'}
 function metric(label,value,note='',tone=''){return '<div class="metric"><div class="label">'+label+'</div><b class="'+tone+'">'+value+'</b><div class="note">'+note+'</div></div>'}
 function head(title,right=''){return '<div class="section-head"><h2>'+title+'</h2>'+right+'</div>'}
 function itemsForDate(arr){return arr.filter(x=>x.date===selectedDate)}
@@ -130,10 +130,12 @@ if(action.startsWith('delete-journal:')){let id=action.split(':')[1];state.journ
 if(action.startsWith('edit-object:')){open('edit-object:'+action.split(':')[1]);return}
 if(action.startsWith('edit-task:')){open('edit-task:'+action.split(':')[1]);return}
 }));
+document.querySelectorAll('[data-action="toggle-task"]').forEach(el=>el.addEventListener('change',()=>{const t=state.tasks.find(x=>x.id===el.dataset.id);if(t){t.done=el.checked;save();render()}}));
 const date=$('#selected-date');if(date)date.addEventListener('change',()=>{selectedDate=date.value||today();render()});
 const form=$('#entity-form');if(form)form.addEventListener('submit',e=>{e.preventDefault();submitForm(form)});
 }
 render();
+if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(()=>{});
 })();
 </script>
 </body>
