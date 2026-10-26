@@ -7,7 +7,7 @@
   const panel = document.createElement('section');
   panel.className = 'card';
   panel.style.cssText = 'max-width:1060px;margin:0 auto 18px;padding:16px 20px';
-  panel.innerHTML = '<b>Облачная синхронизация</b><p class="muted small">Войди или создай аккаунт, чтобы синхронизировать данные между устройствами.</p><form id="cloud-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"><input id="cloud-email" type="email" placeholder="Электронная почта" autocomplete="email" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><input id="cloud-password" type="password" placeholder="Пароль (от 6 символов)" minlength="6" autocomplete="current-password" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><button class="btn" type="submit">Войти</button><button class="btn light" id="cloud-signup" type="button">Создать аккаунт</button></form><div id="cloud-status" class="muted small" style="margin-top:8px">Локальные данные не изменены.</div><div id="cloud-controls" style="display:none;margin-top:8px"><button class="btn light" id="cloud-sync" type="button">Синхронизировать сейчас</button> <button class="btn ghost" id="cloud-out" type="button">Выйти</button></div>';
+  panel.innerHTML = '<b>Облачная синхронизация</b><p class="muted small">Войди или создай аккаунт, чтобы синхронизировать данные между устройствами.</p><form id="cloud-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"><input id="cloud-email" type="email" placeholder="Электронная почта" autocomplete="email" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><input id="cloud-password" type="password" placeholder="Пароль (от 6 символов)" minlength="6" autocomplete="current-password" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><button class="btn" type="submit">Войти</button><button class="btn light" id="cloud-signup" type="button">Создать аккаунт</button><button class="btn ghost" id="cloud-test" type="button">Проверить соединение</button></form><div id="cloud-status" class="muted small" style="margin-top:8px">Локальные данные не изменены.</div><div id="cloud-controls" style="display:none;margin-top:8px"><button class="btn light" id="cloud-sync" type="button">Синхронизировать сейчас</button> <button class="btn ghost" id="cloud-out" type="button">Выйти</button></div>';
   const root = document.querySelector('#root');
   if (root) root.insertBefore(panel, root.firstChild);
   const status = text => { const el = document.querySelector('#cloud-status'); if (el) el.textContent = text; };
@@ -70,6 +70,21 @@
     } catch (e) {
       status('Ошибка соединения с Supabase Auth: ' + (e && e.message ? e.message : String(e)) + '. URL: ' + config.url);
       console.error('Supabase signUp failed', e);
+    }
+  });
+  document.querySelector('#cloud-test').addEventListener('click', async () => {
+    status('Проверяю соединение с Supabase Auth…');
+    try {
+      const response = await fetch(config.url.replace(/\\/$/, '') + '/auth/v1/health', {
+        method: 'GET',
+        headers: { apikey: config.key }
+      });
+      const body = await response.text();
+      status('Проверка соединения: HTTP ' + response.status + '. Ответ: ' + body.slice(0, 180));
+      console.info('Supabase health check', response.status, body);
+    } catch (e) {
+      status('Сбой сетевого запроса к Supabase: ' + (e && e.message ? e.message : String(e)) + '. Возможны блокировка сети/CORS или недоступность endpoint.');
+      console.error('Supabase health check failed', e);
     }
   });
   document.querySelector('#cloud-sync').addEventListener('click', push);
