@@ -3,7 +3,7 @@
   const config = window.MOYA_SUPABASE_CONFIG || {};
   const supa = window.supabase && config.url && config.key ? window.supabase.createClient(config.url, config.key) : null;
   if (!supa) return;
-  let user = null, ready = false, busy = false, lastSaved = localStorage.getItem(KEY) || '', timer;
+  let user = null, ready = false, busy = false, lastSaved = localStorage.getItem(KEY) || '', lastCloudUpdatedAt = null, lastCloudRaw = '', timer, pollTimer;
   const panel = document.createElement('section');
   panel.className = 'card';
   panel.style.cssText = 'max-width:1060px;margin:0 auto 18px;padding:16px 20px';
@@ -22,9 +22,12 @@
     try {
       const raw = localStorage.getItem(KEY) || '{}';
       const data = JSON.parse(raw);
-      const { error } = await supa.from('user_data').upsert({user_id:user.id,data,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      const updatedAt = new Date().toISOString();
+      const { error } = await supa.from('user_data').upsert({user_id:user.id,data,updated_at:updatedAt},{onConflict:'user_id'});
       if (error) throw error;
       lastSaved = raw;
+      lastCloudRaw = JSON.stringify(data);
+      lastCloudUpdatedAt = updatedAt;
       status('Синхронизировано · ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));
     } catch(e) { status('Ошибка синхронизации: ' + e.message); }
     finally { busy = false; }
@@ -35,6 +38,8 @@
       const {data,error} = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
       if (error) throw error;
       if (data && data.data) {
+        lastCloudUpdatedAt = data.updated_at || null;
+        lastCloudRaw = JSON.stringify(data.data);
         const localRaw = localStorage.getItem(KEY) || '{}';
         let cloudRaw = '';
         try { cloudRaw = JSON.stringify(data.data); } catch (_) {}
@@ -105,6 +110,38 @@
       console.error('Supabase health check failed', e);
     }
   });
+  async function checkRemote() {
+    if (!user || !ready || busy || !navigator.onLine) return;
+    try {
+      const {data,error} = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
+      if (error) throw error;
+      if (!data || !data.data || !data.updated_at || data.updated_at === lastCloudUpdatedAt) return;
+      const remoteRaw = JSON.stringify(data.data);
+      const localRaw = localStorage.getItem(KEY) || '{}';
+      if (remoteRaw === JSON.stringify(JSON.parse(localRaw))) {
+        lastCloudRaw = remoteRaw; lastCloudUpdatedAt = data.updated_at; lastSaved = localRaw;
+        status('Уже актуально · обновление подтверждено облаком.');
+        return;
+      }
+      if (localRaw === lastSaved) {
+        try {
+          localStorage.setItem('moya-zhizn-before-cloud-restore', JSON.stringify({savedAt:new Date().toISOString(),data:JSON.parse(localRaw)}));
+        } catch (backupError) {
+          status('Есть обновление на другом устройстве, но резервную копию создать не удалось. Локальные данные не менялись.');
+          return;
+        }
+        localStorage.setItem(KEY, remoteRaw);
+        lastSaved = localStorage.getItem(KEY) || '';
+        lastCloudRaw = remoteRaw; lastCloudUpdatedAt = data.updated_at;
+        status('Получено обновление с другого устройства. Обновляю экран…');
+        location.reload();
+        return;
+      }
+      status('Обнаружены изменения и на этом, и на другом устройстве. Ничего не перезаписано; нажми «Синхронизировать сейчас» только после проверки, какие данные нужно сохранить.');
+    } catch (e) {
+      status('Не удалось проверить обновления в облаке: ' + (e && e.message ? e.message : String(e)));
+    }
+  }
   document.querySelector('#cloud-sync').addEventListener('click', push);
   document.querySelector('#cloud-out').addEventListener('click', async () => { await supa.auth.signOut(); user=null; ready=false; controls(); status('Вышел из аккаунта. Локальные данные сохранены.'); });
   supa.auth.getSession().then(({data,error}) => {
@@ -119,6 +156,7 @@
   if (!navigator.onLine) status('Нет подключения к интернету. Локальные данные доступны; облачная синхронизация возобновится после подключения.');
   setInterval(() => {
     const raw = localStorage.getItem(KEY) || '';
-    if (user && ready && raw !== lastSaved) { clearTimeout(timer); timer=setTimeout(push,1000); }
+    if (user && ready && raw !== lastSaved) { clearTimeout(timer); timer=setTimeout(push,1500); }
   },1500);
+  pollTimer = setInterval(checkRemote, 10000);
 })();
