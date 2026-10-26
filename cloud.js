@@ -3,11 +3,11 @@
   const config = window.MOYA_SUPABASE_CONFIG || {};
   const supa = window.supabase && config.url && config.key ? window.supabase.createClient(config.url, config.key) : null;
   if (!supa) return;
-  let user = null, ready = false, busy = false, lastSaved = localStorage.getItem(KEY) || '', lastCloudUpdatedAt = null, lastCloudRaw = '', timer, pollTimer;
+  let user = null, ready = false, busy = false, conflict = false, lastSaved = localStorage.getItem(KEY) || '', lastCloudUpdatedAt = null, lastCloudRaw = '', timer, pollTimer;
   const panel = document.createElement('section');
   panel.className = 'card';
   panel.style.cssText = 'max-width:1060px;margin:0 auto 18px;padding:16px 20px';
-  panel.innerHTML = '<b>Облачная синхронизация</b><p class="muted small">Войди или создай аккаунт, чтобы синхронизировать данные между устройствами.</p><form id="cloud-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"><input id="cloud-email" type="email" placeholder="Электронная почта" autocomplete="email" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><input id="cloud-password" type="password" placeholder="Пароль (от 6 символов)" minlength="6" autocomplete="current-password" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><button class="btn" type="submit">Войти</button><button class="btn light" id="cloud-signup" type="button">Создать аккаунт</button><button class="btn ghost" id="cloud-test" type="button">Проверить соединение</button></form><div id="cloud-status" class="muted small" style="margin-top:8px">Локальные данные не изменены.</div><div id="cloud-controls" style="display:none;margin-top:8px"><button class="btn light" id="cloud-sync" type="button">Синхронизировать сейчас</button> <button class="btn ghost" id="cloud-out" type="button">Выйти</button></div>';
+  panel.innerHTML = '<b>Облачная синхронизация</b><p class="muted small">Войди или создай аккаунт, чтобы синхронизировать данные между устройствами.</p><form id="cloud-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"><input id="cloud-email" type="email" placeholder="Электронная почта" autocomplete="email" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><input id="cloud-password" type="password" placeholder="Пароль (от 6 символов)" minlength="6" autocomplete="current-password" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><button class="btn" type="submit">Войти</button><button class="btn light" id="cloud-signup" type="button">Создать аккаунт</button><button class="btn ghost" id="cloud-test" type="button">Проверить соединение</button></form><div id="cloud-status" class="muted small" style="margin-top:8px">Локальные данные не изменены.</div><div id="cloud-controls" style="display:none;margin-top:8px"><button class="btn light" id="cloud-sync" type="button">Синхронизировать сейчас</button> <button class="btn light" id="cloud-pull" type="button" style="display:none">Загрузить версию из облака</button> <button class="btn light" id="cloud-push-local" type="button" style="display:none">Сохранить версию этого устройства</button> <button class="btn ghost" id="cloud-out" type="button">Выйти</button></div>';
   const root = document.querySelector('#root');
   // Keep the cloud controls outside #root: the app re-renders #root on every tab change.
   // Inserting the panel inside #root caused it to disappear as soon as render() ran.
@@ -19,7 +19,7 @@
     if (user) status('Вход выполнен: ' + (user.email || 'аккаунт') + '. Проверяю облачную копию…');
   };
   async function push() {
-    if (!user || !ready || busy) return;
+    if (!user || !ready || busy || conflict) return;
     busy = true; status('Синхронизация…');
     try {
       const raw = localStorage.getItem(KEY) || '{}';
@@ -31,7 +31,7 @@
         if (currentRemote && currentRemote.updated_at && currentRemote.updated_at !== lastCloudUpdatedAt) {
           const remoteRaw = JSON.stringify(currentRemote.data);
           if (remoteRaw !== JSON.stringify(data)) {
-            status('Облако изменилось на другом устройстве. Чтобы не затереть данные, автоматическая запись остановлена. Обнови страницу после сохранения резервной копии или разреши загрузку облачной версии.');
+            showConflict('Облако изменилось на другом устройстве. Выбери, какую версию сохранить. Пока выбор не сделан, автоматическая запись остановлена.');
             return;
           }
           lastCloudUpdatedAt = currentRemote.updated_at;
@@ -46,6 +46,62 @@
       lastCloudUpdatedAt = updatedAt;
       status('Синхронизировано · ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));
     } catch(e) { status('Ошибка синхронизации: ' + e.message); }
+    finally { busy = false; }
+  }
+  function showConflict(message) {
+    conflict = true;
+    status(message);
+    const pull = document.querySelector('#cloud-pull');
+    const pushLocal = document.querySelector('#cloud-push-local');
+    if (pull) pull.style.display = 'inline-block';
+    if (pushLocal) pushLocal.style.display = 'inline-block';
+  }
+  function clearConflict() {
+    conflict = false;
+    const pull = document.querySelector('#cloud-pull');
+    const pushLocal = document.querySelector('#cloud-push-local');
+    if (pull) pull.style.display = 'none';
+    if (pushLocal) pushLocal.style.display = 'none';
+  }
+  async function pullCloudVersion() {
+    if (!user || busy) return;
+    if (!confirm('Загрузить облачную версию на это устройство? Текущие локальные данные будут сохранены в резервную копию браузера перед заменой.')) return;
+    busy = true;
+    try {
+      const {data,error} = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
+      if (error) throw error;
+      if (!data || !data.data) throw new Error('В облаке нет сохранённой версии.');
+      const localRaw = localStorage.getItem(KEY);
+      if (localRaw) localStorage.setItem('moya-zhizn-before-cloud-restore', JSON.stringify({savedAt:new Date().toISOString(),data:JSON.parse(localRaw)}));
+      const raw = JSON.stringify(data.data);
+      localStorage.setItem(KEY, raw);
+      lastSaved = raw; lastCloudRaw = raw; lastCloudUpdatedAt = data.updated_at || null;
+      clearConflict(); ready = true;
+      status('Облачная версия загружена. Обновляю приложение…');
+      location.reload();
+    } catch(e) { status('Не удалось загрузить облачную версию: ' + e.message); }
+    finally { busy = false; }
+  }
+  async function pushLocalVersion() {
+    if (!user || busy) return;
+    if (!confirm('Заменить облачную версию данными этого устройства? Перед записью локальная копия будет сохранена в резервную копию браузера. Если в облаке есть новые записи, они могут быть заменены. Продолжить?')) return;
+    busy = true;
+    try {
+      const raw = localStorage.getItem(KEY) || '{}';
+      const localData = JSON.parse(raw);
+      const remote = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
+      if (remote.error) throw remote.error;
+      if (remote.data && remote.data.data) {
+        localStorage.setItem('moya-zhizn-before-cloud-restore', JSON.stringify({savedAt:new Date().toISOString(),data:localData}));
+        localStorage.setItem('moya-zhizn-cloud-before-overwrite', JSON.stringify({savedAt:new Date().toISOString(),data:remote.data.data}));
+      }
+      const updatedAt = new Date().toISOString();
+      const {error} = await supa.from('user_data').upsert({user_id:user.id,data:localData,updated_at:updatedAt},{onConflict:'user_id'});
+      if (error) throw error;
+      lastSaved = raw; lastCloudRaw = JSON.stringify(localData); lastCloudUpdatedAt = updatedAt;
+      clearConflict(); ready = true;
+      status('Данные этого устройства сохранены в облако · ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));
+    } catch(e) { showConflict('Не удалось разрешить конфликт: ' + e.message); }
     finally { busy = false; }
   }
   async function login(userObj) {
@@ -153,12 +209,14 @@
         location.reload();
         return;
       }
-      status('Обнаружены изменения и на этом, и на другом устройстве. Ничего не перезаписано; нажми «Синхронизировать сейчас» только после проверки, какие данные нужно сохранить.');
+      showConflict('Изменения есть и на этом, и на другом устройстве. Ничего не перезаписано. Выбери облачную версию или версию этого устройства.');
     } catch (e) {
       status('Не удалось проверить обновления в облаке: ' + (e && e.message ? e.message : String(e)));
     }
   }
   document.querySelector('#cloud-sync').addEventListener('click', push);
+  document.querySelector('#cloud-pull').addEventListener('click', pullCloudVersion);
+  document.querySelector('#cloud-push-local').addEventListener('click', pushLocalVersion);
   document.querySelector('#cloud-out').addEventListener('click', async () => { await supa.auth.signOut(); user=null; ready=false; controls(); status('Вышел из аккаунта. Локальные данные сохранены.'); });
   supa.auth.getSession().then(({data,error}) => {
     if (error) { status('Не удалось восстановить сессию: ' + error.message); return; }
