@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f5f6f8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Моя жизнь" />
+<meta name="description" content="Планировщик дня, личный дневник и учёт прибыли по объектам." />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icon.svg" />
+<title>Моя жизнь</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#18202b;--muted:#77808e;--line:#e8ebef;--blue:#4169e1;--blue2:#edf1ff;--green:#16845b;--red:#ce4b50;--radius:20px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.4}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1100px;margin:0 auto;padding:22px 20px 100px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.brand{font-weight:800;font-size:22px;letter-spacing:-.7px}.date-label{color:var(--muted);font-size:13px;margin-top:3px}.avatar{width:42px;height:42px;border-radius:14px;background:#e5eaff;color:#3555c7;display:grid;place-items:center;font-weight:800}
+.hero{background:linear-gradient(130deg,#243d9e,#5277f1);color:white;border-radius:26px;padding:24px;margin-bottom:20px;box-shadow:0 12px 30px #344caa25}.hero small{opacity:.8}.hero h1{font-size:26px;letter-spacing:-.8px;margin:7px 0}.hero p{margin:0;color:#e1e7ff}.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.hero-stat{background:#ffffff19;border:1px solid #ffffff20;padding:12px;border-radius:15px}.hero-stat b{font-size:19px;display:block}.hero-stat span{font-size:12px;color:#e1e7ff}
+.tabs{display:flex;gap:7px;overflow:auto;margin:0 0 22px;padding:4px;background:#e9ecf2;border-radius:16px}.tab{flex:1;min-width:max-content;padding:11px 15px;border:0;background:transparent;color:#697383;border-radius:12px;font-weight:650}.tab.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px #202c4710}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 0 12px}.section-head h2{font-size:18px;margin:0;letter-spacing:-.4px}.muted{color:var(--muted)}.small{font-size:12px}.btn{border:0;border-radius:12px;background:var(--blue);color:#fff;padding:10px 14px;font-weight:700}.btn.light{background:var(--blue2);color:#3153c8}.btn.ghost{background:#f0f2f5;color:#414c5b}.btn.danger{background:#fff0f0;color:var(--red)}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.card{background:var(--card);border:1px solid #edf0f3;border-radius:var(--radius);padding:18px;min-width:0}.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric{background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px;min-width:0}.metric .label{font-size:12px;color:var(--muted)}.metric b{display:block;font-size:clamp(17px,2vw,23px);letter-spacing:-.5px;margin-top:8px;overflow-wrap:anywhere}.metric .note{font-size:12px;margin-top:5px;color:var(--muted)}.positive{color:var(--green)!important}.negative{color:var(--red)!important}
+.row-item{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}.row-item:last-child{border-bottom:0;padding-bottom:0}.time{font-size:12px;color:var(--muted);min-width:49px;padding-top:2px}.dot{width:9px;height:9px;background:#6b82ec;border-radius:50%;margin-top:5px;flex-shrink:0}.row-main{flex:1;min-width:0}.row-main b{display:block;font-size:14px}.row-main p{margin:3px 0 0;color:var(--muted);font-size:12px}.check{appearance:none;border:1.5px solid #cbd1dc;width:19px;height:19px;border-radius:6px;flex-shrink:0;cursor:pointer}.check:checked{background:var(--blue);border-color:var(--blue)}.check:checked:after{content:"✓";display:block;color:#fff;font-size:13px;text-align:center}
+.empty{padding:26px 8px;text-align:center;color:var(--muted);font-size:13px}.list-card{margin-bottom:12px}.object-card{display:flex;flex-direction:column;gap:13px}.object-title{display:flex;justify-content:space-between;gap:10px}.object-title h3{font-size:16px;margin:0}.pill{font-size:11px;background:#edf7f1;color:#1c8054;padding:5px 8px;border-radius:9px;height:max-content;white-space:nowrap}.pill.gray{background:#f0f2f5;color:#737d89}.object-numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.object-numbers span{font-size:11px;color:var(--muted);display:block}.object-numbers b{display:block;font-size:14px;margin-top:4px;overflow-wrap:anywhere}.actions{display:flex;gap:7px;flex-wrap:wrap}.actions .btn{padding:8px 10px;font-size:12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted);font-weight:650}.field input,.field select,.field textarea{width:100%;border:1px solid #dfe4eb;border-radius:12px;padding:11px 12px;background:#fff;color:var(--ink);outline:none}.field textarea{resize:vertical;min-height:90px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#8197f4;box-shadow:0 0 0 3px #4169e115}.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.hidden{display:none!important}.journal-entry{white-space:pre-wrap;font-size:14px;margin-top:10px}.day-controls{display:flex;align-items:center;gap:8px}.day-controls input{padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:#ffffffec;backdrop-filter:blur(18px);border-top:1px solid #e5e8ed;display:none;justify-content:space-around}.bottom-nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px}.bottom-nav button span{font-size:19px}.bottom-nav button.active{color:var(--blue);font-weight:750}
+.overlay{position:fixed;inset:0;background:#10182877;z-index:20;display:flex;align-items:center;justify-content:center;padding:14px}.modal{background:#fff;border-radius:22px;width:min(560px,100%);max-height:90vh;overflow:auto;padding:20px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.modal-head h2{margin:0;font-size:19px}.close{background:#f0f2f5;border:0;border-radius:10px;width:35px;height:35px;font-size:20px}
+.toast{position:fixed;z-index:30;bottom:90px;left:50%;transform:translateX(-50%);background:#1d2532;color:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px #0002;font-size:13px;max-width:calc(100% - 30px)}
+.note-box{background:#f7f8fa;border-radius:14px;padding:13px;font-size:13px;color:#566171}.progress{height:7px;background:#edf0f5;border-radius:10px;overflow:hidden}.progress span{display:block;height:100%;background:#617df0;border-radius:10px}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}.table th{color:var(--muted);font-weight:600}
+@media(max-width:700px){.app{padding:17px 14px 105px}.top{margin-bottom:16px}.brand{font-size:20px}.hero{padding:20px;border-radius:22px}.hero h1{font-size:23px}.hero-stats{gap:8px}.hero-stat{padding:10px}.hero-stat b{font-size:16px}.hero-stat span{font-size:10px}.tabs{display:none}.bottom-nav{display:flex}.grid{grid-template-columns:1fr}.metric-grid{gap:8px}.metric{padding:12px}.metric b{font-size:17px}.metric .label{font-size:11px}.card{padding:15px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section-head h2{font-size:17px}.object-numbers b{font-size:12px}.day-controls input{max-width:145px}.table{font-size:12px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const money=n=>new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(Number(n)||0);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const uid=()=>Math.random().toString(36).slice(2,10);
+const fmtDate=s=>{if(!s)return '';let d=new Date(s+'T12:00:00');return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})};
+const defaultState=()=>({tasks:[{id:uid(),date:today(),time:'09:00',title:'Проверить задачи на день',note:'',done:false},{id:uid(),date:today(),time:'11:00',title:'Связаться с заказчиком',note:'Уточнить статус работ',done:false}],entries:[],objects:[],transactions:[],journal:[],schedule:[],currency:'RUB'});
+let state;try{state=JSON.parse(localStorage.getItem('moya-zhizn-data'))||defaultState()}catch(e){state=defaultState()}
+let tab='today',selectedDate=today(),modal=null,toastTimer;
+function save(){localStorage.setItem('moya-zhizn-data',JSON.stringify(state))}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function totalExpense(objId){return state.transactions.filter(t=>t.objectId===objId&&t.type==='expense').reduce((s,t)=>s+Number(t.amount||0),0)}
+function totalIncome(objId){return state.transactions.filter(t=>t.objectId===objId&&t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0)}
+function objProfit(o){return Number(o.revenue||0)-totalExpense(o.id)}
+function totalExpenses(){return state.transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount||0),0)}
+function totalIncomes(){return state.transactions.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0)}
+function netProfit(){return totalIncomes()-totalExpenses()}
+function objName(id){return state.objects.find(o=>o.id===id)?.name||'Без объекта'}
+function btn(label,action,cls='light'){return '<button class="btn '+cls+'" data-action="'+action+'">'+label+'</button>'}
+function metric(label,value,note='',tone=''){return '<div class="metric"><div class="label">'+label+'</div><b class="'+tone+'">'+value+'</b><div class="note">'+note+'</div></div>'}
+function head(title,right=''){return '<div class="section-head"><h2>'+title+'</h2>'+right+'</div>'}
+function itemsForDate(arr){return arr.filter(x=>x.date===selectedDate)}
+function render(){
+const d=new Date(selectedDate+'T12:00:00');const greeting=(new Date().getHours()<12?'Доброе утро':new Date().getHours()<18?'Добрый день':'Добрый вечер');
+const todayTasks=itemsForDate(state.tasks).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+const activeObjects=state.objects.filter(o=>o.status!=='Завершён');
+const done=todayTasks.filter(t=>t.done).length;
+$('#root').innerHTML='<main class="app"><header class="top"><div><div class="brand">✦ Моя жизнь</div><div class="date-label">'+fmtDate(today())+' · личный штаб</div></div><div class="avatar">МЖ</div></header>'
++'<section class="hero"><small>'+greeting+'!</small><h1>'+ (selectedDate===today()?'Твой день — в твоих руках':'План на '+fmtDate(selectedDate))+'</h1><p>Держи в фокусе главное — дела, жизнь и результат.</p><div class="hero-stats"><div class="hero-stat"><b>'+done+'/'+todayTasks.length+'</b><span>дел выполнено</span></div><div class="hero-stat"><b>'+activeObjects.length+'</b><span>активных объектов</span></div><div class="hero-stat"><b>'+money(netProfit())+'</b><span>доходы − расходы</span></div></div></section>'
++'<nav class="tabs">'+navButtons()+'</nav>'+renderTab()+'</main><nav class="bottom-nav">'+navButtons(true)+'</nav>'
++(modal?renderModal():'');
+bindEvents();
+}
+function navButtons(mobile=false){const list=[['today','☀','Сегодня'],['journal','▤','Журнал'],['objects','⌂','Объекты'],['finance','₽','Финансы']];return list.map(([id,icon,label])=>'<button class="tab '+(tab===id?'active':'')+'" data-tab="'+id+'">'+(mobile?'<span>'+icon+'</span>':'')+label+'</button>').join('')}
+function renderTab(){
+if(tab==='today')return renderToday();
+if(tab==='journal')return renderJournal();
+if(tab==='objects')return renderObjects();
+return renderFinance();
+}
+function renderToday(){
+const tasks=itemsForDate(state.tasks).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+const sched=itemsForDate(state.schedule).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+const entry=state.journal.find(j=>j.date===selectedDate);
+return '<div class="section-head"><h2>План дня</h2><div class="day-controls"><button class="btn ghost" data-action="prev-day">‹</button><input type="date" id="selected-date" value="'+selectedDate+'"><button class="btn ghost" data-action="next-day">›</button></div></div><div class="grid"><section class="card">'+head('Задачи',btn('+ Добавить','add-task'))+(tasks.length?tasks.map(t=>'<div class="row-item"><input class="check" type="checkbox" data-action="toggle-task" data-id="'+t.id+'" '+(t.done?'checked':'')+'><div class="time">'+esc(t.time||'—')+'</div><div class="row-main"><b style="'+(t.done?'text-decoration:line-through;color:#8b93a0':'')+'">'+esc(t.title)+'</b>'+(t.note?'<p>'+esc(t.note)+'</p>':'')+'</div><button class="btn ghost" style="padding:6px 9px" data-action="edit-task" data-id="'+t.id+'">···</button></div>').join(''):'<div class="empty">Пока нет задач. Добавь первое дело.</div>')+'<div style="margin-top:14px">'+btn('+ Записать задачу','add-task','light')+'</div></section><section class="card">'+head('Расписание',btn('+ Событие','add-schedule'))+(sched.length?sched.map(s=>'<div class="row-item"><div class="time">'+esc(s.time||'—')+'</div><div class="dot"></div><div class="row-main"><b>'+esc(s.title)+'</b>'+(s.note?'<p>'+esc(s.note)+'</p>':'')+'</div><button class="btn ghost" style="padding:6px 9px" data-action="delete-schedule" data-id="'+s.id+'">×</button></div>').join(''):'<div class="empty">Запланируй встречи, поездки и важные дела.</div>')+'<div class="section-head"><h2>Заметка дня</h2></div><textarea id="quick-journal" class="field" style="width:100%;border:1px solid #dfe4eb;border-radius:12px;padding:12px;min-height:100px" placeholder="Что важно не забыть? Как прошёл день?">'+esc(entry?.text||'')+'</textarea><div class="form-actions">'+btn('Сохранить заметку','save-journal')+'</div></section></div><div style="margin-top:16px" class="metric-grid">'+metric('Доходы сегодня',money(state.transactions.filter(t=>t.date===selectedDate&&t.type==='income').reduce((s,t)=>s+ +t.amount,0)),'Записанные поступления','positive')+metric('Расходы сегодня',money(state.transactions.filter(t=>t.date===selectedDate&&t.type==='expense').reduce((s,t)=>s+ +t.amount,0)),'Записанные затраты','negative')+metric('Чистый результат',money(state.transactions.filter(t=>t.date===selectedDate).reduce((s,t)=>s+(t.type==='income'?1:-1)*Number(t.amount),0)),'Доходы минус расходы')+'</div>';
+}
+function renderJournal(){
+const entries=[...state.journal].sort((a,b)=>b.date.localeCompare(a.date));
+return head('Личный журнал',btn('+ Новая запись','add-journal'))+'<div class="card">'+(entries.length?entries.map(e=>'<div class="row-item"><div class="dot"></div><div class="row-main"><b>'+fmtDate(e.date)+'</b><div class="journal-entry">'+esc(e.text)+'</div><div class="actions" style="margin-top:9px">'+btn('Редактировать','edit-journal:'+e.id,'ghost')+btn('Удалить','delete-journal:'+e.id,'danger')+'</div></div></div>').join(''):'<div class="empty">Тут будут твои мысли, идеи, события и итоги дней.</div>')+'</div>';
+}
+function renderObjects(){
+return head('Рабочие объекты',btn('+ Добавить объект','add-object'))+(state.objects.length?'<div class="grid">'+state.objects.map(o=>{const exp=totalExpense(o.id),inc=totalIncome(o.id),profit=objProfit(o),margin=Number(o.revenue)>0?Math.round(profit/Number(o.revenue)*100):0;return '<section class="card object-card"><div class="object-title"><div><h3>'+esc(o.name)+'</h3><div class="muted small" style="margin-top:4px">'+esc(o.client||'Заказчик не указан')+'</div></div><span class="pill '+(o.status==='Завершён'?'gray':'')+'">'+esc(o.status||'В работе')+'</span></div><div class="object-numbers"><div><span>Цена договора</span><b>'+money(o.revenue)+'</b></div><div><span>Расходы</span><b class="negative">'+money(exp)+'</b></div><div><span>Прибыль</span><b class="'+(profit>=0?'positive':'negative')+'">'+money(profit)+'</b></div></div><div class="progress"><span style="width:'+Math.max(0,Math.min(100,margin))+'%"></span></div><div class="muted small">Маржа: '+margin+'% · Поступило: '+money(inc)+'</div>'+(o.note?'<div class="note-box">'+esc(o.note)+'</div>':'')+'<div class="actions">'+btn('+ Расход','add-transaction:expense:'+o.id,'light')+btn('+ Доход','add-transaction:income:'+o.id,'light')+btn('Изменить','edit-object:'+o.id,'ghost')+btn('Удалить','delete-object:'+o.id,'danger')+'</div></section>'}).join('')+'</div>':'<div class="card empty">Добавь первый объект, укажи цену работ и учитывай каждый расход. Приложение покажет фактическую прибыль.</div>');
+}
+function renderFinance(){
+const ins=totalIncomes(),outs=totalExpenses(),objRevenue=state.objects.reduce((s,o)=>s+Number(o.revenue||0),0);
+const tx=[...state.transactions].sort((a,b)=>b.date.localeCompare(a.date));
+return '<div class="section-head"><h2>Финансы и результат</h2><div class="actions">'+btn('+ Операция','add-transaction','light')+btn('Экспорт JSON','export','ghost')+'</div></div><div class="metric-grid">'+metric('Поступления',money(ins),'Фактический доход','positive')+metric('Расходы',money(outs),'Все записанные затраты','negative')+metric('Денежный результат',money(ins-outs),'Поступления − расходы',(ins-outs>=0?'positive':'negative'))+'</div><div class="grid" style="margin-top:16px"><section class="card">'+head('Сводка по объектам')+(state.objects.length?'<table class="table"><thead><tr><th>Объект</th><th>Расходы</th><th>Прибыль*</th></tr></thead><tbody>'+state.objects.map(o=>'<tr><td>'+esc(o.name)+'</td><td>'+money(totalExpense(o.id))+'</td><td class="'+(objProfit(o)>=0?'positive':'negative')+'">'+money(objProfit(o))+'</td></tr>').join('')+'</tbody></table><p class="muted small">* Цена договора минус учтённые расходы; поступления показаны отдельно.</p>':'<div class="empty">Добавь объект, чтобы видеть прибыль.</div>')+'</section><section class="card">'+head('Операции',btn('+ Добавить','add-transaction','light'))+(tx.length?tx.slice(0,8).map(t=>'<div class="row-item"><div class="dot" style="background:'+(t.type==='income'?'#16845b':'#d85a60')+'"></div><div class="row-main"><b>'+esc(t.title|| (t.type==='income'?'Поступление':'Расход'))+'</b><p>'+fmtDate(t.date)+' · '+esc(objName(t.objectId))+(t.category?' · '+esc(t.category):'')+'</p></div><b class="'+(t.type==='income'?'positive':'negative')+'">'+(t.type==='income'?'+':'−')+money(t.amount)+'</b><button class="btn ghost" style="padding:5px 8px" data-action="delete-transaction" data-id="'+t.id+'">×</button></div>').join(''):'<div class="empty">Записей пока нет.</div>')+'</section></div>';
+}
+function field(label,name,type='text',value='',extra=''){return '<div class="field"><label for="'+name+'">'+label+'</label><input id="'+name+'" name="'+name+'" type="'+type+'" value="'+esc(value)+'" '+extra+'></div>'}
+function selectField(label,name,options,value){return '<div class="field"><label for="'+name+'">'+label+'</label><select id="'+name+'" name="'+name+'">'+options.map(([v,l])=>'<option value="'+esc(v)+'" '+(v===value?'selected':'')+'>'+esc(l)+'</option>').join('')+'</select></div>'}
+function textareaField(label,name,value='',full=true){return '<div class="field '+(full?'full':'')+'"><label for="'+name+'">'+label+'</label><textarea id="'+name+'" name="'+name+'">'+esc(value)+'</textarea></div>'}
+function renderModal(){
+let title='',body='',item=null;const m=modal;const parts=m.action.split(':');const a=parts[0],id=parts[1],extra=parts[2];
+if(a==='add-task'||a==='edit-task'){item=state.tasks.find(x=>x.id===id)||{};title=a==='add-task'?'Новая задача':'Изменить задачу';body='<form id="entity-form" data-kind="task"><div class="form-grid">'+field('Название','title','text',item.title||'','required')+field('Дата','date','date',item.date||selectedDate,'required')+field('Время','time','time',item.time||'09:00')+textareaField('Комментарий','note',item.note||'')+'</div><div class="form-actions">'+btn('Отмена','close-modal','ghost')+'<button class="btn" type="submit">Сохранить</button></div></form>'}
+else if(a==='add-schedule'){title='Новое событие';body='<form id="entity-form" data-kind="schedule"><div class="form-grid">'+field('Название','title','text','','required')+field('Дата','date','date',selectedDate,'required')+field('Время','time','time','12:00')+textareaField('Комментарий','note','')+'</div><div class="form-actions">'+btn('Отмена','close-modal','ghost')+'<button class="btn" type="submit">Сохранить</button></div></form>'}
+else if(a==='add-object'||a==='edit-object'){item=state.objects.find(x=>x.id===id)||{};title=a==='add-object'?'Новый объект':'Изменить объект';body='<form id="entity-form" data-kind="object" data-id="'+(item.id||'')+'"><div class="form-grid">'+field('Название объекта','name','text',item.name||'','required')+field('Заказчик','client','text',item.client||'')+field('Цена договора (₽)','revenue','number',item.revenue||0,'min="0" step="0.01" required')+selectField('Статус','status',[['В работе','В работе'],['Ожидает','Ожидает'],['Завершён','Завершён']],item.status||'В работе')+field('Дата начала','date','date',item.date||selectedDate)+textareaField('Примечания','note',item.note||'')+'</div><div class="form-actions">'+btn('Отмена','close-modal','ghost')+'<button class="btn" type="submit">Сохранить объект</button></div></form>'}
+else if(a==='add-transaction'){const type= id==='income'?'income':id==='expense'?'expense':'expense';const obj=extra||'';title=type==='income'?'Записать доход':'Записать расход';body='<form id="entity-form" data-kind="transaction"><div class="form-grid">'+selectField('Тип операции','type',[['expense','Расход'],['income','Доход']],type)+field('Сумма (₽)','amount','number','','min="0.01" step="0.01" required')+field('Дата','date','date',selectedDate,'required')+selectField('Объект','objectId',[['','Без объекта'],...state.objects.map(o=>[o.id,o.name])],obj)+selectField('Категория','category',[['Материалы','Материалы'],['Работа','Работа / зарплата'],['Транспорт','Транспорт'],['Оборудование','Оборудование'],['Субподряд','Субподряд'],['Прочее','Прочее']], 'Материалы')+field('Описание','title','text','','required')+textareaField('Комментарий','note','')+'</div><div class="form-actions">'+btn('Отмена','close-modal','ghost')+'<button class="btn" type="submit">Сохранить операцию</button></div></form>'}
+else if(a==='add-journal'||a==='edit-journal'){item=state.journal.find(x=>x.id===id)||{};title=a==='add-journal'?'Новая запись':'Редактировать запись';body='<form id="entity-form" data-kind="journal" data-id="'+(item.id||'')+'"><div class="form-grid">'+field('Дата','date','date',item.date||selectedDate,'required')+textareaField('Текст записи','text',item.text||'')+'</div><div class="form-actions">'+btn('Отмена','close-modal','ghost')+'<button class="btn" type="submit">Сохранить</button></div></form>'}
+return '<div class="overlay" data-action="overlay-close"><div class="modal"><div class="modal-head"><h2>'+title+'</h2><button class="close" data-action="close-modal">×</button></div>'+body+'</div></div>';
+}
+function toast(s){let old=$('.toast');if(old)old.remove();let el=document.createElement('div');el.className='toast';el.textContent=s;document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),2300)}
+function open(action){modal={action};render()}
+function close(){modal=null;render()}
+function saveJournal(){let text=$('#quick-journal').value.trim();let existing=state.journal.find(j=>j.date===selectedDate);if(existing){existing.text=text}else if(text){state.journal.push({id:uid(),date:selectedDate,text})}save();toast('Заметка сохранена');render()}
+function submitForm(form){const data=new FormData(form),v=Object.fromEntries(data.entries()),kind=form.dataset.kind,id=form.dataset.id;if(kind==='task'){if(id){Object.assign(state.tasks.find(x=>x.id===id),v)}else state.tasks.push({...v,id:uid(),done:false})}
+if(kind==='schedule')state.schedule.push({...v,id:uid()});
+if(kind==='object'){let obj={...v,revenue:Number(v.revenue)||0};if(id)Object.assign(state.objects.find(x=>x.id===id),obj);else state.objects.push({...obj,id:uid()})}
+if(kind==='transaction')state.transactions.push({...v,id:uid(),amount:Number(v.amount)||0,objectId:v.objectId||''});
+if(kind==='journal'){let e=state.journal.find(x=>x.id===id);if(e)Object.assign(e,{date:v.date,text:v.text});else state.journal.push({...v,id:uid()})}
+save();modal=null;render();toast('Сохранено')}
+function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moya-zhizn-backup-'+today()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Резервная копия готова')}
+function bindEvents(){
+document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>{tab=el.dataset.tab;modal=null;render()}));
+document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',e=>{const action=el.dataset.action;if(el.classList.contains('check'))return;if(action==='overlay-close'&&e.target!==el)return;if(action==='overlay-close'||action==='close-modal'){close();return}
+if(action==='prev-day'||action==='next-day'){let d=new Date(selectedDate+'T12:00:00');d.setDate(d.getDate()+(action==='prev-day'?-1:1));selectedDate=d.toISOString().slice(0,10);render();return}
+if(action==='save-journal'){saveJournal();return}
+if(action==='export'){exportData();return}
+if(action==='add-task'||action==='edit-task'||action==='add-schedule'||action==='add-object'||action==='edit-object'||action==='add-transaction'||action==='add-journal'||action==='edit-journal'){open(action);return}
+if(action==='toggle-task'){let t=state.tasks.find(x=>x.id===el.dataset.id);if(t)t.done=el.checked;save();render();return}
+if(action==='delete-schedule'){state.schedule=state.schedule.filter(x=>x.id!==el.dataset.id);save();render();return}
+if(action==='delete-transaction'){state.transactions=state.transactions.filter(x=>x.id!==el.dataset.id);save();render();return}
+if(action.startsWith('delete-journal:')){const id=action.split(':')[1];state.journal=state.journal.filter(x=>x.id!==id);save();render();return}
+if(action.startsWith('add-transaction:')){const [,type,objId]=action.split(':');open('add-transaction:'+type+':'+objId);return}
+if(action.startsWith('edit-journal:')){open('edit-journal:'+action.split(':')[1]);return}
+if(action.startsWith('delete-object:')){let id=action.split(':')[1];if(confirm('Удалить объект? Операции останутся в журнале, но потеряют привязку к объекту.')){state.objects=state.objects.filter(x=>x.id!==id);state.transactions.forEach(t=>{if(t.objectId===id)t.objectId='' });save();render()}return}
+if(action.startsWith('delete-journal:')){let id=action.split(':')[1];state.journal=state.journal.filter(x=>x.id!==id);save();render();return}
+if(action.startsWith('edit-object:')){open('edit-object:'+action.split(':')[1]);return}
+if(action.startsWith('edit-task:')){open('edit-task:'+action.split(':')[1]);return}
+}));
+const date=$('#selected-date');if(date)date.addEventListener('change',()=>{selectedDate=date.value||today();render()});
+const form=$('#entity-form');if(form)form.addEventListener('submit',e=>{e.preventDefault();submitForm(form)});
+}
+render();
+})();
+</script>
+</body>
+</html>
