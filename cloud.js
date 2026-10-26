@@ -35,8 +35,15 @@
       const {data,error} = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
       if (error) throw error;
       if (data && data.data) {
-        if (!confirm('В облаке уже есть данные. Нажми OK, чтобы загрузить их на это устройство (заменив локальную копию). Нажми Отмена, чтобы не менять данные и не включать синхронизацию.')) {
+        if (!confirm('В облаке уже есть данные. Перед заменой я сохраню текущую локальную копию в резервный снимок этого браузера. Нажми OK, чтобы загрузить данные из облака на это устройство. Нажми Отмена, чтобы оставить локальные данные без изменений.')) {
           status('Синхронизация не включена. Локальные данные сохранены.'); return;
+        }
+        try {
+          const localSnapshot = localStorage.getItem(KEY);
+          if (localSnapshot) localStorage.setItem('moya-zhizn-before-cloud-restore', JSON.stringify({savedAt:new Date().toISOString(),data:JSON.parse(localSnapshot)}));
+        } catch (backupError) {
+          status('Не удалось создать резервную копию локальных данных. Облачная копия не загружена, локальные данные сохранены.');
+          return;
         }
         localStorage.setItem(KEY, JSON.stringify(data.data));
         lastSaved = localStorage.getItem(KEY) || '';
@@ -89,8 +96,16 @@
   });
   document.querySelector('#cloud-sync').addEventListener('click', push);
   document.querySelector('#cloud-out').addEventListener('click', async () => { await supa.auth.signOut(); user=null; ready=false; controls(); status('Вышел из аккаунта. Локальные данные сохранены.'); });
-  supa.auth.getSession().then(({data}) => { if(data.session) login(data.session.user); });
-  supa.auth.onAuthStateChange((event,session) => { if(event==='SIGNED_OUT'){user=null;ready=false;controls();} });
+  supa.auth.getSession().then(({data,error}) => {
+    if (error) { status('Не удалось восстановить сессию: ' + error.message); return; }
+    if(data.session) login(data.session.user);
+  }).catch(e => status('Не удалось восстановить сессию: ' + (e && e.message ? e.message : String(e))));
+  supa.auth.onAuthStateChange((event,session) => {
+    if(event==='SIGNED_OUT'){user=null;ready=false;controls();status('Вы вышли из аккаунта. Локальные данные сохранены.');}
+  });
+  window.addEventListener('online', () => { if (!user) status('Соединение восстановлено. Можно войти или создать аккаунт.'); });
+  window.addEventListener('offline', () => status('Нет подключения к интернету. Локальные данные доступны; облачная синхронизация возобновится после подключения.'));
+  if (!navigator.onLine) status('Нет подключения к интернету. Локальные данные доступны; облачная синхронизация возобновится после подключения.');
   setInterval(() => {
     const raw = localStorage.getItem(KEY) || '';
     if (user && ready && raw !== lastSaved) { clearTimeout(timer); timer=setTimeout(push,1000); }
