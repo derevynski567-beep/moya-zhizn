@@ -9,7 +9,9 @@
   panel.style.cssText = 'max-width:1060px;margin:0 auto 18px;padding:16px 20px';
   panel.innerHTML = '<b>Облачная синхронизация</b><p class="muted small">Войди или создай аккаунт, чтобы синхронизировать данные между устройствами.</p><form id="cloud-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"><input id="cloud-email" type="email" placeholder="Электронная почта" autocomplete="email" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><input id="cloud-password" type="password" placeholder="Пароль (от 6 символов)" minlength="6" autocomplete="current-password" required style="padding:10px;border:1px solid #ddd;border-radius:10px"><button class="btn" type="submit">Войти</button><button class="btn light" id="cloud-signup" type="button">Создать аккаунт</button><button class="btn ghost" id="cloud-test" type="button">Проверить соединение</button></form><div id="cloud-status" class="muted small" style="margin-top:8px">Локальные данные не изменены.</div><div id="cloud-controls" style="display:none;margin-top:8px"><button class="btn light" id="cloud-sync" type="button">Синхронизировать сейчас</button> <button class="btn ghost" id="cloud-out" type="button">Выйти</button></div>';
   const root = document.querySelector('#root');
-  if (root) root.insertBefore(panel, root.firstChild);
+  // Keep the cloud controls outside #root: the app re-renders #root on every tab change.
+  // Inserting the panel inside #root caused it to disappear as soon as render() ran.
+  if (root && root.parentNode) root.parentNode.insertBefore(panel, root);
   const status = text => { const el = document.querySelector('#cloud-status'); if (el) el.textContent = text; };
   const controls = () => {
     document.querySelector('#cloud-form').style.display = user ? 'none' : 'grid';
