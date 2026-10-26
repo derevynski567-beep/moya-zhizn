@@ -22,6 +22,20 @@
     try {
       const raw = localStorage.getItem(KEY) || '{}';
       const data = JSON.parse(raw);
+      if (lastCloudUpdatedAt) {
+        const remoteCheck = await supa.from('user_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
+        if (remoteCheck.error) throw remoteCheck.error;
+        const currentRemote = remoteCheck.data;
+        if (currentRemote && currentRemote.updated_at && currentRemote.updated_at !== lastCloudUpdatedAt) {
+          const remoteRaw = JSON.stringify(currentRemote.data);
+          if (remoteRaw !== JSON.stringify(data)) {
+            status('Облако изменилось на другом устройстве. Чтобы не затереть данные, автоматическая запись остановлена. Обнови страницу после сохранения резервной копии или разреши загрузку облачной версии.');
+            return;
+          }
+          lastCloudUpdatedAt = currentRemote.updated_at;
+          lastCloudRaw = remoteRaw;
+        }
+      }
       const updatedAt = new Date().toISOString();
       const { error } = await supa.from('user_data').upsert({user_id:user.id,data,updated_at:updatedAt},{onConflict:'user_id'});
       if (error) throw error;
