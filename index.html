@@ -43,7 +43,19 @@ const fmtDate=s=>{if(!s)return '';let d=new Date(s+'T12:00:00');return d.toLocal
 const defaultState=()=>({tasks:[{id:uid(),date:today(),time:'09:00',title:'Проверить задачи на день',note:'',done:false},{id:uid(),date:today(),time:'11:00',title:'Связаться с заказчиком',note:'Уточнить статус работ',done:false}],entries:[],objects:[],transactions:[],journal:[],schedule:[],currency:'RUB'});
 let state;try{state=JSON.parse(localStorage.getItem('moya-zhizn-data'))||defaultState()}catch(e){state=defaultState()}
 let tab='today',selectedDate=today(),modal=null,toastTimer;
-function save(){localStorage.setItem('moya-zhizn-data',JSON.stringify(state))}
+function save(){
+  const key='moya-zhizn-data';
+  try{
+    const previous=localStorage.getItem(key);
+    if(previous && previous!==JSON.stringify(state)){
+      try{localStorage.setItem('moya-zhizn-auto-backup',JSON.stringify({savedAt:new Date().toISOString(),data:JSON.parse(previous)}))}catch(backupError){}
+    }
+    localStorage.setItem(key,JSON.stringify(state));
+  }catch(error){
+    console.error('Local save failed',error);
+    alert('Не удалось сохранить изменения в браузере. Освободи место в хранилище и сразу экспортируй резервную копию в разделе «Финансы».');
+  }
+}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function totalExpense(objId){return state.transactions.filter(t=>t.objectId===objId&&t.type==='expense').reduce((s,t)=>s+Number(t.amount||0),0)}
 function totalIncome(objId){return state.transactions.filter(t=>t.objectId===objId&&t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0)}
