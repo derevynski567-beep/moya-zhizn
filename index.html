@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#0b0a19" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="Моя жизнь" />
-<meta name="description" content="Планировщик дня, личный дневник и учёт прибыли по объектам." />
+<meta name="apple-mobile-web-app-title" content="PlanDay" />
+<meta name="description" content="PlanDay — планируй, действуй, достигай. Задачи, расписание, дневник и финансы в одном месте." />
 <link rel="manifest" href="./manifest.json" />
 <link rel="apple-touch-icon" href="./icon.svg" />
-<title>Моя жизнь</title>
+<title>PlanDay — планируй, действуй, достигай</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script defer src="./cloud.js"></script>
@@ -309,6 +309,15 @@ a{color:#a9a0ff}
  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
 
+
+/* PlanDay brand system */
+.brand-lockup{display:flex;align-items:center;gap:11px;line-height:1}
+.brand-mark{width:38px;height:38px;display:block;filter:drop-shadow(0 0 12px #397cff45)}
+.brand-word{font-size:28px;font-weight:900;letter-spacing:-1.25px;color:#f8faff}
+.brand-word span{background:linear-gradient(110deg,#35caff 0%,#6a79ff 55%,#bb60ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.avatar{font-size:0!important;background:#10132a url('./icon.svg') center/cover no-repeat!important;border:1px solid #5a72ff75!important;box-shadow:0 0 24px #426eff26}
+@media(max-width:700px){.brand-mark{width:33px;height:33px}.brand-word{font-size:25px}.brand-lockup{gap:8px}}
+
 </style>
 </head>
 <body>
@@ -363,7 +372,7 @@ const d=new Date(selectedDate+'T12:00:00');const greeting=(new Date().getHours()
 const todayTasks=itemsForDate(state.tasks).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 const activeObjects=state.objects.filter(o=>o.status!=='Завершён');
 const done=todayTasks.filter(t=>t.done).length;
-$('#root').innerHTML='<main class="app"><header class="top"><div><div class="brand">✦ Моя жизнь</div><div class="date-label">'+fmtDate(today())+' · личный штаб</div></div><div class="avatar">МЖ</div></header>'
+$('#root').innerHTML='<main class="app"><header class="top"><div><div class="brand brand-lockup"><img src="./icon.svg" alt="" class="brand-mark"><span class="brand-word">Plan<span>Day</span></span></div><div class="date-label">'+fmtDate(today())+' · личный штаб</div></div><div class="avatar">МЖ</div></header>'
 +'<section class="hero"><small>'+greeting+'!</small><h1>'+ (selectedDate===today()?'Твой день — в твоих руках':'План на '+fmtDate(selectedDate))+'</h1><p>Держи в фокусе главное — дела, жизнь и результат.</p><div class="hero-stats"><div class="hero-stat"><b>'+done+'/'+todayTasks.length+'</b><span>дел выполнено</span></div><div class="hero-stat"><b>'+activeObjects.length+'</b><span>активных объектов</span></div><div class="hero-stat"><b>'+money(netProfit())+'</b><span>доходы − расходы</span></div></div></section>'
 +'<nav class="tabs">'+navButtons()+'</nav>'+renderTab()+'</main><nav class="bottom-nav">'+navButtons(true)+'</nav>'
 +(modal?renderModal():'');
