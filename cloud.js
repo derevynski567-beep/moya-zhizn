@@ -75,7 +75,7 @@
   document.querySelector('#cloud-test').addEventListener('click', async () => {
     status('Проверяю соединение с Supabase Auth…');
     try {
-      const response = await fetch(config.url.replace(/\\/$/, '') + '/auth/v1/health', {
+      const response = await fetch(config.url.replace(/\/$/, '') + '/auth/v1/health', {
         method: 'GET',
         headers: { apikey: config.key }
       });
