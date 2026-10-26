@@ -1,4 +1,4 @@
-const CACHE = "moya-zhizn-v1";
+const CACHE = "moya-zhizn-v2";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
